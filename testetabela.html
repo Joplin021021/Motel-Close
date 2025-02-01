@@ -36,12 +36,9 @@
             transition: background 0.3s, transform 0.2s;
             font-size: 18px;
         }
-        .tab-button:hover {
+        .tab-button:hover, .tab-button.active {
             background-color: #ff007f;
             transform: scale(1.1);
-        }
-        .tab-button.active {
-            background-color: #ff007f;
         }
         .room-list {
             display: none;
@@ -78,7 +75,7 @@
             background-color: #cc0066;
         }
         .room button:disabled {
-            background-color: #b91818;
+            background-color: #555;
             cursor: not-allowed;
         }
         .room button.available {
@@ -98,65 +95,39 @@
             <button id="btn-ventilador" class="tab-button">Ventilador</button>
         </div>
 
-        <div id="ar" class="room-list active">
-            <script>
-                for (let i = 1; i <= 10; i++) {
-                    document.write(`
-                        <div class="room">
-                            <h2>Quarto ${i}</h2>
-                            <p>1:00H-------R$40,00.</p>
-                            <p>1:30H-------R$50,00.</p>
-                            <p>2:00H-------R$60,00.</p>
-                            <p>2:30H-------R$70,00.<p/>
-                            <p>3:00H-------R$80,00.</p>
-                            <p>Per Noite:21:00H às 8:00H---R$100,00</p>
-                            <button onclick="reservarQuarto(this)">Reservar</button>
-                            <button class="available" onclick="tornarDisponivel(this)" style="display:none;">Disponível</button>
-                        </div>
-                    `);
-                }
-            </script>
-        </div>
-
-        <div id="ventilador" class="room-list">
-            <script>
-                for (let i = 1; i <= 10; i++) {
-                    document.write(`
-                        <div class="room">
-                            <h2>Quarto  ${i}</h2>
-                            <p>1:00H-------R$30,00.</p>
-                            <p>1:30H-------R$40,00.</p>
-                            <p>2:00H-------R$50,00.</p>
-                            <p>2:30H-------R$60,00.<p/>
-                            <p>3:00H-------R$70,00.</p>
-                            <p>Per Noite:21:00H às 8:00H---R$90,00</p>
-                            <button onclick="reservarQuarto(this)">Reservar</button>
-                            <button class="available" onclick="tornarDisponivel(this)" style="display:none;">Disponível</button>
-                        </div>
-                    `);
-                }
-            </script>
-        </div>
+        <div id="ar" class="room-list active"></div>
+        <div id="ventilador" class="room-list"></div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const buttons = document.querySelectorAll(".tab-button");
-            const roomLists = document.querySelectorAll(".room-list");
+            const arCondicionado = [5, 6, 7, 8, 9, 11, 13];
+            const ventilador = [3, 4, 12];
+            
+            function criarQuartos(lista, tipo, precos) {
+                const container = document.getElementById(tipo);
+                lista.forEach(i => {
+                    const roomDiv = document.createElement("div");
+                    roomDiv.classList.add("room");
+                    roomDiv.innerHTML = `
+                        <h2>${tipo === "ar" ? "Quarto" : "Quarto "} ${i}</h2>
+                        <p>${precos}</p>
+                        <button onclick="reservarQuarto(this)">Reservar</button>
+                        <button class="available" onclick="tornarDisponivel(this)" style="display:none;">Disponível</button>
+                    `;
+                    container.appendChild(roomDiv);
+                });
+            }
+            
+            criarQuartos(arCondicionado, "ar", `1:00H - R$40,00 | 1:30H - R$50,00 | 2:00H - R$60,00 | 2:30H - R$70,00 | 3:00H - R$80,00 | Per Noite: 21:00H às 8:00H - R$100,00`);
+            criarQuartos(ventilador, "ventilador", `1:00H - R$30,00 | 1:30H - R$40,00 | 2:00H - R$50,00 | 2:30H - R$60,00 | 3:00H - R$70,00 | Per Noite: 21:00H às 8:00H - R$90,00`);
 
-            buttons.forEach(button => {
+            document.querySelectorAll(".tab-button").forEach(button => {
                 button.addEventListener("click", () => {
-                    buttons.forEach(btn => btn.classList.remove("active"));
+                    document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
                     button.classList.add("active");
-
-                    roomLists.forEach(list => {
-                        list.classList.remove("active");
-                        list.style.display = "none";  // Mudei a lógica aqui para ocultar a aba corretamente
-                    });
-                    
-                    const selectedList = document.getElementById(button.id.replace("btn-", ""));
-                    selectedList.style.display = "block";
-                    setTimeout(() => selectedList.classList.add("active"), 10);
+                    document.querySelectorAll(".room-list").forEach(list => list.classList.remove("active"));
+                    document.getElementById(button.id.replace("btn-", "")).classList.add("active");
                 });
             });
         });
@@ -164,15 +135,13 @@
         function reservarQuarto(button) {
             button.disabled = true;
             button.innerText = "ocupado";
-            const availableButton = button.nextElementSibling;
-            availableButton.style.display = "inline-block";  // Exibe o botão de "Disponível"
+            button.nextElementSibling.style.display = "inline-block";
         }
 
         function tornarDisponivel(button) {
-            const reservarButton = button.previousElementSibling;
-            reservarButton.disabled = false;
-            reservarButton.innerText = "reservar";
-            button.style.display = "none";  // Esconde o botão de "Disponível"
+            button.previousElementSibling.disabled = false;
+            button.previousElementSibling.innerText = "Reservar";
+            button.style.display = "none";
         }
     </script>
 </body>
